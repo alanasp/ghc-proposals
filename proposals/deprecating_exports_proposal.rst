@@ -58,14 +58,14 @@ You would get a deprecation warning:
 
     foo = Data.String.lines
 
-* It is also important that the warning is not triggered whenever a name is used within a hiding clause, i.e.: ::
+* The warning is not triggered whenever a name is used within a hiding clause, i.e.: ::
 
     module A ( {-# DEPRECATED "blah" #-} x ) where { x = True }
     module B where { import A hiding (x) }
 
-* A symbol exported by a module is deprecated if all export specifiers for that symbol have a DEPRECATED pragma. It is an error if a symbol is exported multiple times with DEPRECATED pragmas where the deprecation messages differ ::
+* A symbol exported by a module is deprecated if there exists an export specifier for that symbol that has a DEPRECATED pragma. If a symbol is exported multiple times with DEPRECATED pragmas where the deprecation messages differ, the last message would be used. It is important to note that the deprecation pragma is bound to the top-level export (e.g.: type constructor) ::
     
-    -- only T(C) is deprecated
+    -- T is deprecated
     module M 
       ( {-# DEPRECATED "don't use the constructor" #-} T(C)
       , T(D)  -- or T, pattern D
@@ -74,16 +74,7 @@ You would get a deprecation warning:
     data T = C ...
     pattern D ...
     
-    -- T is deprecated
-    module M 
-      ( {-# DEPRECATED "don't use the constructor" #-} T(C)
-      , {-# DEPRECATED "don't use the constructor" #-} T(D)  -- or T, pattern D
-      ) where
-
-    data T = C ...
-    pattern D ...
-    
-    -- error
+    -- "message2" is used to generate warnings
     module M 
       ( {-# DEPRECATED "message1" #-} T(C)
       , {-# DEPRECATED "message2" #-} T(D)  -- or T, pattern D
@@ -138,5 +129,7 @@ I am leaning towards the first one as it readily shows next to an export that it
 
 Implementation Plan
 -------------------
+UPDATE: The proposed changes are now implemented and in a review phase.
+
 I would aim to implement the proposed changes as part of my GSoC 2018 commitment.
 To achieve this, I will maintain regular communications with my mentors Matthew Pickering and Erik de Castro Lopo and the broader GHC developer community.
